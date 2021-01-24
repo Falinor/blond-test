@@ -1,14 +1,11 @@
-import json
 import pygame
-import requests
 import sys
-import time
-import pprint
-import os
-import requests
 import textdistance
 import random
 import RPi.GPIO as GPIO
+
+from music import MusicService
+from src.player import Player
 from thread_http import *
 from constants import *
 
@@ -25,10 +22,10 @@ time_song = 30 # temps maximal d'une musique
 time_end = 15 # temps sur l'écran "c'est fini"
 time_scores = 0 # temps sur l'écran des scores
 
-# constantes de créateur 
+# constantes de créateur
 userId = "5b0719534d469f6928743b59"
 password = "q"
-    
+
 button_1 = 20
 button_2 = 21
 button_start = 16
@@ -125,7 +122,7 @@ artiste_nope = pygame.image.load("../data/images/artiste_nope.png")
 
 def set_attraction(a):
     state["attraction"] = a
-    
+
 def set_ranking(a):
     state["ranking"] = a
 
@@ -175,11 +172,11 @@ def init():
 
 
 def init_musics():
-    musics.clear()
-    for f in os.listdir("./../data/musics"):
-        if f.endswith(".ogg"):
-            musics.append(f)
-    random.shuffle(musics)
+    music_service = MusicService()
+    playlist = music_service.random_playlist()
+    for i in range(20):
+        track = music_service.random_track(playlist)
+        musics.append(track)
 
 
 def fill_background(color):
@@ -193,18 +190,18 @@ def fill_background(color):
 def get_next_music():
     music = musics[state["current_music"]]
     state["current_music"] += 1
-    state["answer_titre"] = music.split("_")[0]
-    state["answer_artiste"] = music.split("_")[1].split(".ogg")[0]
+    state["answer_titre"] = music.title
+    # TODO: handle multiple artists
+    state["answer_artiste"] = music.artists[0]
     state["has_won_1"] = False
     state["has_won_2"] = False
-    pygame.mixer.music.load("./../data/musics/" + music)
-    pygame.mixer.music.play()
-    pygame.mixer.music.set_volume(0.5)
-
-
-def get_attraction():
-    # thread.call(CallHttp(GET, "/anniv/2020/attractions/blindtest", None, lambda x: set_attraction(x.json()["attraction"])))
-    pass
+    player = Player()
+    player.enqueue(music)
+    player.play()
+    player.set_volume(0.5)
+    # pygame.mixer.music.load("./../data/musics/" + music)
+    # pygame.mixer.music.play()
+    # pygame.mixer.music.set_volume(0.5)
 
 
 def get_ranking():
@@ -234,7 +231,7 @@ def light_remote_led(led):
         GPIO.output(led_red, True)
     elif led == "yellow":
         GPIO.output(led_yellow, True)
-    elif led== "all":
+    elif led == "all":
         GPIO.output(led_all, True)
     state_led[0] = 5
 
@@ -245,7 +242,6 @@ def update():
         state["time"] = time.time()
         pygame.mixer.music.stop()
         state["state"] = END
-        post_scores()
     if state["state"] == LOBBY:
         update_lobby()
     elif state["state"] == REGLES:
@@ -268,7 +264,6 @@ def update_lobby():
             state["timerGet"] -= 1
             if state["timerGet"] == 0:
                 state["timerGet"] = 5
-                get_attraction()
         if "attraction" not in state or "users" not in state or not state["attraction"] or not state["users"]:
             return
         a = state["attraction"]
@@ -345,7 +340,6 @@ def update_loading():
             state["time"] = time.time()
             pygame.mixer.music.stop()
             state["state"] = END
-            post_scores()
         else:
             state["state"] = MUSIC_PLAY
             state["time"] = time.time()
@@ -477,25 +471,6 @@ def check_match(s1, s2):
     return True
 
 
-def post_scores():
-    body = {
-        "userId": userId,
-        "password": password,
-        "scores": [
-            {
-                "userId": state["player_1"]["userId"],
-                "points": state["player_1"]["points"]
-            },
-            {
-                "userId": state["player_2"]["userId"],
-                "points": state["player_2"]["points"]
-            }
-        ]
-    }
-    print("posting scores")
-    # thread.call(CallHttp(POST, "/anniv/2020/attractions/blindtest/score", body, lambda x: get_ranking()))
-        
-
 def update_end():
     if time.time() - state["time"] > time_end:
         state["time"] = time.time()
@@ -535,7 +510,7 @@ def update_scores():
         state["has_buzzed_1"] = False
         state["has_buzzed_2"] = False
         state["done"] = 0
-        
+
 def render():
     fill_background((255, 255, 255))
     if state["state"] == LOBBY:
@@ -554,8 +529,8 @@ def render():
     else:
         render_default()
     pygame.display.flip()
-    
-    
+
+
 def render_lobby():
     screen = screens[0]
     if state["player_1"] and state["player_2"]:
@@ -656,7 +631,7 @@ def render_loading():
         surface_text = fonts["normal_mais_un_peu_plus"].render("Artiste : " + state["answer_artiste"], False, (0, 255, 0))
         w, h = fonts["normal_mais_un_peu_plus"].size(str(seconds))
         screen.blit(surface_text, (res_x / 4, res_y / 2 + 8.7 * h))
-    
+
 
 def render_music_playing():
     screen = screens[0]
@@ -707,7 +682,7 @@ def render_music_playing():
             screen.blit(titre_ok, (res_x * x_titre, res_y * y_both))
         else:
             screen.blit(titre_nope, (res_x * x_titre, res_y * y_both))
-        
+
     elif state["timer_2"] > 0:
         # player 2 answering
         screen.blit(input_1, (0, 0))
@@ -739,7 +714,7 @@ def render_music_playing():
         surface_text = fonts["normal"].render(text, False, (255, 255, 255))
         w, h = fonts["normal"].size(text)
         screen.blit(surface_text, (res_x *0.43 - w/2, res_y *0.50 - h / 2))
-    
+
 
 def render_loading_bar(current, total):
     screen = screens[0]
@@ -808,7 +783,6 @@ def render_ranking():
 if __name__ == "__main__":
     init()
     get_users()
-    get_attraction()
     GPIO.output(led_1, False)
     GPIO.output(led_2, False)
     try:
@@ -827,6 +801,3 @@ if __name__ == "__main__":
         pygame.quit()
         GPIO.cleanup()
         sys.exit()
-
-        
-        
