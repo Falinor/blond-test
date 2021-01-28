@@ -9,8 +9,11 @@ python-vlc = "*"
 youtube-dl = "*"
 spotipy = "*"
 google-api-python-client = "*"
+textdistance = "*"
+"rpi.gpio" = "*"
+pygame = "~=1.9.4"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3"

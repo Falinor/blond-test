@@ -1,3 +1,4 @@
+import os.path
 import pygame
 import sys
 import textdistance
@@ -5,7 +6,7 @@ import random
 import RPi.GPIO as GPIO
 
 from music import MusicService
-from src.player import Player
+from player import Player
 from thread_http import *
 from constants import *
 
@@ -77,7 +78,7 @@ state = {
     "done": False
 }
 
-end_0 = pygame.image.load("../data/images/end_0.png")
+end_0 = pygame.image.load(os.path.join("..", "data", "images", "end_0.png"))
 end_0 = pygame.transform.scale(end_0, (res_x, res_y))
 ranking = pygame.image.load("../data/images/ranking.png")
 ranking = pygame.transform.scale(ranking, (res_x, res_y))
@@ -198,7 +199,8 @@ def get_next_music():
     player = Player()
     player.enqueue(music)
     player.play()
-    player.set_volume(0.5)
+    # WARNING: FAUT PAS FAIRE CA
+    # player.set_volume(0.5)
     # pygame.mixer.music.load("./../data/musics/" + music)
     # pygame.mixer.music.play()
     # pygame.mixer.music.set_volume(0.5)

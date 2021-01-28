@@ -1,5 +1,5 @@
 categories = [
-    'electro',
+    # 'electro',
     'french-variety',
     'pop',
     'rock'
