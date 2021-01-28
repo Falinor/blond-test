@@ -55,6 +55,8 @@ state_led = [0]
 
 thread = ThreadHttp()
 
+player = Player()
+
 state = {
     "attraction": None,
     "ranking": [],
@@ -196,7 +198,6 @@ def get_next_music():
     state["answer_artiste"] = music.artists[0]
     state["has_won_1"] = False
     state["has_won_2"] = False
-    player = Player()
     player.enqueue(music)
     player.play()
     # WARNING: FAUT PAS FAIRE CA
@@ -340,7 +341,7 @@ def update_loading():
     if time.time() - state["time"] > time_loading:
         if state["current_music"] >= len(musics):
             state["time"] = time.time()
-            pygame.mixer.music.stop()
+            player.stop()
             state["state"] = END
         else:
             state["state"] = MUSIC_PLAY
@@ -358,7 +359,7 @@ def update_music_play():
         sounds["buzz"].play()
         light_remote_led("red")
         texts[0] = ""
-        pygame.mixer.music.pause()
+        player.pause()
         state["timer_1"] = time.time()
         state["has_buzzed_1"] = True
         GPIO.output(led_1, True)
@@ -373,8 +374,8 @@ def update_music_play():
         GPIO.output(led_1, False)
         state["timer_1"] = 0
         state["time"] += time_answer
-        pygame.mixer.music.play()
-        pygame.mixer.music.set_volume(0.5)
+        player.play()
+        # pygame.mixer.music.set_volume(0.5)
         GPIO.output(led_1, not state["has_buzzed_1"])
         GPIO.output(led_2, not state["has_buzzed_2"])
     if not GPIO.input(button_2) and state["timer_2"] == 0 and state["timer_1"] == 0 and not state["has_buzzed_2"]:
@@ -382,7 +383,7 @@ def update_music_play():
         light_remote_led("yellow")
         texts[0] = ""
         state["has_buzzed_2"] = True
-        pygame.mixer.music.pause()
+        player.pause()
         state["timer_2"] = time.time()
         GPIO.output(led_1, False)
         GPIO.output(led_2, True)
@@ -397,15 +398,15 @@ def update_music_play():
         GPIO.output(led_1, not state["has_buzzed_1"])
         GPIO.output(led_2, not state["has_buzzed_2"])
         GPIO.output(relay_2, False)
-        pygame.mixer.music.play()
-        pygame.mixer.music.set_volume(0.5)
+        player.play()
+        # pygame.mixer.music.set_volume(0.5)
     if (state["artiste"] and state["titre"]) or ((state["timer_1"] == 0 and state["timer_2"] == 0) and (
             (state["artiste"] and state["titre"]) or time.time() - state["time"] > time_song)) or (
                 (state["timer_1"] == 0 and state["timer_2"] == 0) and state["has_buzzed_1"] and state["has_buzzed_2"]):
-        pygame.mixer.music.play()
+        player.play()
         GPIO.output(relay_1, False)
         GPIO.output(relay_2, False)
-        pygame.mixer.music.set_volume(0.2)
+        # pygame.mixer.music.set_volume(0.2)
         light_remote_led("white")
         state["passed_time"] += time.time() - (state["global_time"] + state["passed_time"])
         state["state"] = LOADING
@@ -799,7 +800,7 @@ if __name__ == "__main__":
         print(e)
     finally:
         thread.stop()
-        pygame.mixer.music.stop()
+        player.stop()
         pygame.quit()
         GPIO.cleanup()
         sys.exit()
