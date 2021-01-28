@@ -7,7 +7,7 @@ from track import Track
 
 
 class MusicService:
-    def __init__(self, cache) -> None:
+    def __init__(self) -> None:
         auth_manager = SpotifyClientCredentials()
         self.sp = spotipy.Spotify(auth_manager=auth_manager)
 

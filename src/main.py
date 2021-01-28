@@ -53,7 +53,7 @@ thread = ThreadHttp()
 
 player = Player()
 music_service = MusicService()
-playlist = music_service.random_playlist()
+playlist = None
 
 state = {
     "attraction": None,
@@ -133,8 +133,8 @@ def set_users(users):
 def init():
     pygame.init()
     pygame.mixer.init()
-    screens[0] = pygame.display.set_mode((res_x, res_y), pygame.FULLSCREEN | pygame.HWSURFACE)
-    # screens[0] = pygame.display.set_mode((res_x, res_y))
+    # screens[0] = pygame.display.set_mode((res_x, res_y), pygame.FULLSCREEN | pygame.HWSURFACE)
+    screens[0] = pygame.display.set_mode((res_x, res_y))
     pygame.display.set_caption("Blind test")
     sounds["buzz"] = pygame.mixer.Sound('./../data/buzzer.ogg')
     sounds["good"] = pygame.mixer.Sound('./../data/good.ogg')
@@ -173,7 +173,14 @@ def init():
 
 
 def init_musics():
-    pass
+    playlist = music_service.random_playlist()
+    tracks = music_service.tracks(playlist)
+    # TODO: check this out
+    # music_service.tracks seems to be launched in a thread
+    # which resolves after the loading completes, so the game
+    # ends before it could be played
+    for t in tracks:
+        musics.append(t)
 
 
 def fill_background(color):
@@ -185,9 +192,6 @@ def fill_background(color):
 
 
 def get_next_music():
-    track = music_service.tracks(playlist)
-    musics.append(track)
-
     music = musics[state["current_music"]]
     state["current_music"] += 1
     state["answer_titre"] = music.title
