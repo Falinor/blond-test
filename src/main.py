@@ -23,10 +23,6 @@ time_song = 30 # temps maximal d'une musique
 time_end = 15 # temps sur l'écran "c'est fini"
 time_scores = 0 # temps sur l'écran des scores
 
-# constantes de créateur
-userId = "5b0719534d469f6928743b59"
-password = "q"
-
 button_1 = 20
 button_2 = 21
 button_start = 16
@@ -56,6 +52,8 @@ state_led = [0]
 thread = ThreadHttp()
 
 player = Player()
+music_service = MusicService()
+playlist = music_service.random_playlist()
 
 state = {
     "attraction": None,
@@ -175,11 +173,7 @@ def init():
 
 
 def init_musics():
-    music_service = MusicService()
-    playlist = music_service.random_playlist()
-    for i in range(20):
-        track = music_service.random_track(playlist)
-        musics.append(track)
+    pass
 
 
 def fill_background(color):
@@ -191,6 +185,9 @@ def fill_background(color):
 
 
 def get_next_music():
+    track = music_service.tracks(playlist)
+    musics.append(track)
+
     music = musics[state["current_music"]]
     state["current_music"] += 1
     state["answer_titre"] = music.title
@@ -261,44 +258,17 @@ def update():
 
 
 def update_lobby():
-    # BATTLEMYTHE.NET SECTION
-    if False:
-        # Remettre cette partie pour rebrancher la connection à battlemythe.net
-        if state["timerGet"] > 0:
-            state["timerGet"] -= 1
-            if state["timerGet"] == 0:
-                state["timerGet"] = 5
-        if "attraction" not in state or "users" not in state or not state["attraction"] or not state["users"]:
-            return
-        a = state["attraction"]
-        if len(a["players"]) > 0 and state["users"]:
-            state["player_1"] = {
-                "userId": a["players"][0],
-                "username": [u for u in state["users"] if u["_id"] == a["players"][0]][0]["username"],
-                "points": 0
-            }
-        else:
-            state["player_1"] = None
-        if len(a["players"]) > 1 and state["users"]:
-            state["player_2"] = {
-                "userId": a["players"][1],
-                "username": [u for u in state["users"] if u["_id"] == a["players"][1]][0]["username"],
-                "points": 0
-            }
-        else:
-            state["player_2"] = None
-    else:
-        # Mode autonome
-        state["player_1"] = {
-            "userId": "id1",
-            "username": "Monique",
-            "points": 0
-        }
-        state["player_2"] = {
-            "userId": "id2",
-            "username": "Véro",
-            "points": 0
-        }
+    # Mode autonome
+    state["player_1"] = {
+        "userId": "id1",
+        "username": "Monique",
+        "points": 0
+    }
+    state["player_2"] = {
+        "userId": "id2",
+        "username": "Véro",
+        "points": 0
+    }
     led = False
     if state["player_1"] and state["player_2"]:
         led = True
@@ -307,16 +277,10 @@ def update_lobby():
         state["state"] = REGLES
         state["index_rules"] = 0
         state["pressed"] = True
-        body = {
-            "userId": userId,
-            "password": password
-        }
         light_remote_led("white")
         GPIO.output(led_start, True)
         GPIO.output(led_1, False)
         GPIO.output(led_2, False)
-        # DEMARRAGE DE LA PARTIE SUR BATTLEMYTHE.NET
-        # thread.call(CallHttp(POST, "/anniv/2020/attractions/blindtest/start", body, lambda x: print(x.text)))
 
 
 def update_regles():
@@ -441,7 +405,7 @@ def update_music_play():
                     texts[0] += event.unicode if event.unicode in "abcdefghijklimonpqrstuvwxyz01234567890!.,- " else ""
                 else:
                     texts[0] = ""
-                if check_match(texts[0].lower(), state["answer_titre"].lower()) and not state["titre"]:
+                if check_match(texts[0], state["answer_titre"]) and not state["titre"]:
                     sounds["good"].play()
                     state["titre"] = True
                     if state["timer_1"]:
@@ -452,7 +416,7 @@ def update_music_play():
                         state["has_won_2"] = True
                     texts[0] = ""
                     state["timer_1" if state["timer_1"] else "timer_2"] = time.time()
-                if check_match(texts[0].lower(), state["answer_artiste"].lower()) and not state["artiste"]:
+                if check_match(texts[0], state["answer_artiste"]) and not state["artiste"]:
                     sounds["good"].play()
                     if state["timer_1"]:
                         state["player_1"]["points"] += 1
@@ -466,8 +430,9 @@ def update_music_play():
 
 
 def check_match(s1, s2):
-    t1 = "".join([a for a in s1.lower() if a in "abcdefghijklmnopqrstuvwxyz0123456789"]).lower()
-    t2 = "".join([a for a in s2.lower() if a in "abcdefghijklmnopqrstuvwxyz0123456789"]).lower()
+    charset = 'abcdefghijklmnopqrstuvwxyz0123456789'
+    t1 = "".join([a for a in s1.lower() if a in charset]).lower()
+    t2 = "".join([a for a in s2.lower() if a in charset]).lower()
     return textdistance.levenshtein(t1, t2) <= 3 or len(s1) >= len(s2) - 1
 
 
