@@ -6,11 +6,11 @@ name = "pypi"
 [packages]
 pafy = "*"
 python-vlc = "*"
+redis = "*"
 youtube-dl = "*"
 spotipy = "*"
 google-api-python-client = "*"
 textdistance = "*"
-"rpi.gpio" = "*"
 pygame = "~=1.9.4"
 
 [dev-packages]
