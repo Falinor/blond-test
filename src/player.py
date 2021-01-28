@@ -20,12 +20,6 @@ class Player:
         media = self.instance.media_new(audio.url)
         self.player.set_media(media)
 
-    def dequeue(self):
-        pass
-
-    def next(self):
-        pass
-
     def play(self):
         self.player.play()
 

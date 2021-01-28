@@ -244,6 +244,7 @@ def update():
     if (state["state"] == LOADING or state["state"] == MUSIC_PLAY) and (state["current_music"] > len(musics) or ("global_time" in state and state["global_time"] > 0 and time.time() - state["global_time"] > time_global)):
         state["time"] = time.time()
         pygame.mixer.music.stop()
+        player.stop()
         state["state"] = END
     if state["state"] == LOBBY:
         update_lobby()
@@ -467,11 +468,7 @@ def update_music_play():
 def check_match(s1, s2):
     t1 = "".join([a for a in s1.lower() if a in "abcdefghijklmnopqrstuvwxyz0123456789"]).lower()
     t2 = "".join([a for a in s2.lower() if a in "abcdefghijklmnopqrstuvwxyz0123456789"]).lower()
-    if textdistance.levenshtein(t1, t2) > 3:
-        return False
-    if len(s1) < len(s2) - 1:
-        return False
-    return True
+    return textdistance.levenshtein(t1, t2) <= 3 or len(s1) >= len(s2) - 1
 
 
 def update_end():

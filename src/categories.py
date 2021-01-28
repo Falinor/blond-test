@@ -1,6 +1,19 @@
 categories = [
+    '2020',
+    'alternative',
+    'at_home',
     # 'electro',
-    'french-variety',
+    'french_variety',
+    'in_the_car',
+    'hiphop',
+    'latin',
+    'party',
     'pop',
-    'rock'
+    'popculture',
+    'reggae',
+    'rnb',
+    'romance',
+    'rock',
+    'toplists',
+    'travel'
 ]
