@@ -7,6 +7,7 @@ import RPi.GPIO as GPIO
 
 from music import MusicService
 from player import Player
+from categories import categories
 from thread_http import *
 from constants import *
 
@@ -53,7 +54,6 @@ thread = ThreadHttp()
 
 player = Player()
 music_service = MusicService()
-playlist = None
 
 state = {
     "attraction": None,
@@ -75,7 +75,8 @@ state = {
     "has_won_1": False,
     "has_won_2": False,
     "index_rules": 0,
-    "done": False
+    "done": False,
+    "category": None
 }
 
 end_0 = pygame.image.load(os.path.join("..", "data", "images", "end_0.png"))
@@ -169,18 +170,18 @@ def init():
     GPIO.setup(relay_1, GPIO.OUT)
     GPIO.setup(relay_2, GPIO.OUT)
     light_remote_led("all")
-    get_ranking()
 
 
 def init_musics():
-    playlist = music_service.random_playlist()
+    state["category"] = random.choice(categories)
+    playlist = music_service.random_playlist(state["category"])
+    state["category"] = state["category"].capitalize()
     tracks = music_service.tracks(playlist)
     # TODO: check this out
     # music_service.tracks seems to be launched in a thread
     # which resolves after the loading completes, so the game
     # ends before it could be played
-    for t in tracks:
-        musics.append(t)
+    musics.extend(tracks)
 
 
 def fill_background(color):
@@ -206,16 +207,6 @@ def get_next_music():
     # pygame.mixer.music.load("./../data/musics/" + music)
     # pygame.mixer.music.play()
     # pygame.mixer.music.set_volume(0.5)
-
-
-def get_ranking():
-    # thread.call(CallHttp(GET, "/anniv/2020/rankings/attractions/blindtest", None, lambda x: set_ranking(x.json()["rankings"])))
-    pass
-
-
-def get_users():
-    # thread.call(CallHttp(GET, "/anniv/2020/users", None, lambda x: set_users(x.json())))
-    pass
 
 
 def update_remote_leds():
@@ -443,9 +434,6 @@ def check_match(s1, s2):
 def update_end():
     if time.time() - state["time"] > time_end:
         state["time"] = time.time()
-        # BATTLEMYTHE.NET
-        # state["state"] = SCORES
-        # SANS BATTLEMYTHE.NET
         state["state"] = LOBBY
         state["timerGet"] = 1
         state["current_music"] = 0
@@ -588,10 +576,12 @@ def render_loading():
     seconds = time_loading - int(time.time() - state["time"])
     surface_text = fonts["big"].render(str(seconds), False, (255, 255, 255))
     w, h = fonts["big"].size(str(seconds))
+
     if state["current_music"] == 0:
         screen.blit(surface_text, (res_x *0.41 - w/2, res_y *0.63 - h / 2))
     else:
         screen.blit(surface_text, (res_x *0.36 - w/2, res_y *0.48 - h / 2))
+
     # render_loading_bar(time.time() - state["time"], time_loading)
     if state["current_music"] > 0:
         surface_text = fonts["normal_mais_un_peu_plus"].render("Titre : " + state["answer_titre"], False, (0, 255, 0))
@@ -620,6 +610,12 @@ def render_music_playing():
         surface_text = fonts["big"].render(text, False, (255, 255, 255))
         w, h = fonts["big"].size(text)
         screen.blit(surface_text, (res_x *0.51 - w/2, res_y * 0.55))
+
+        # Display the music category
+        surface_text = fonts["normal_mais_un_peu_plus"].render(state["category"], False, (0, 0, 255))
+        w, h = fonts["normal_mais_un_peu_plus"].size(state["category"])
+        screen.blit(surface_text, (res_x * 0.5 - w / 2, res_y * 0.9))
+
     elif state["timer_1"] > 0:
         # player 1 answering
         screen.blit(input_0, (0, 0))
@@ -751,7 +747,6 @@ def render_ranking():
 
 if __name__ == "__main__":
     init()
-    get_users()
     GPIO.output(led_1, False)
     GPIO.output(led_2, False)
     try:
