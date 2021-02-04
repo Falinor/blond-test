@@ -583,11 +583,16 @@ def render_loading():
         # Display artist
         artist = f'Artiste : {state["answer_artiste"]}'
         surface_text = fonts["normal_mais_un_peu_plus"].render(artist, False, (0, 255, 0))
-        screen.blit(surface_text, (res_x / 4, res_y * 0.73))
+        screen.blit(surface_text, (res_x / 4, res_y * 0.74))
         # Display skip text
         skip = "Appuyez sur le bouton start pour passer"
         surface_text = fonts["normal"].render(skip, False, (0, 255, 255))
         screen.blit(surface_text, (res_x / 4, res_y * 0.8))
+    else:
+        seconds = time_loading - int(time.time() - state["time"])
+        surface_text = fonts["big"].render(str(seconds), False, (255, 255, 255))
+        w, h = fonts["big"].size(str(seconds))
+        screen.blit(surface_text, (res_x * 0.36 - w/2, res_y * 0.48 - h / 2))
 
 
 def render_music_playing():
