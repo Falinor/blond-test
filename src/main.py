@@ -174,7 +174,7 @@ def init():
 
 def init_musics():
     state["category"] = random.choice(categories)
-    playlist = music_service.random_playlist(state["category"])
+    playlist = music_service.random_playlist(category=state["category"])
     state["category"] = state["category"].capitalize()
     tracks = music_service.tracks(playlist)
     # TODO: check this out

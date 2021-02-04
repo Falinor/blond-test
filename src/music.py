@@ -11,7 +11,7 @@ class MusicService:
         auth_manager = SpotifyClientCredentials()
         self.sp = spotipy.Spotify(auth_manager=auth_manager)
 
-    def random_playlist(self, category=choice(categories), limit=20, offset=0):
+    def random_playlist(self, category, limit=20, offset=0):
         playlists = self.sp.category_playlists(
             category_id=category,
             country='FR',
