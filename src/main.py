@@ -298,7 +298,7 @@ def update_loading():
     GPIO.output(led_start, s)
     GPIO.output(led_1, s)
     GPIO.output(led_2, s)
-    if not player.is_playing():
+    if not GPIO.input(button_start) or not player.is_playing():
         # if time.time() - state["time"] > time_loading:
         if state["current_music"] >= len(musics):
             state["time"] = time.time()
@@ -574,23 +574,20 @@ def render_loading():
             screen.blit(loose, (0, 0))
     else:
         screen.blit(start, (0, 0))
-    seconds = time_loading - int(time.time() - state["time"])
-    surface_text = fonts["big"].render(str(seconds), False, (255, 255, 255))
-    w, h = fonts["big"].size(str(seconds))
 
-    if state["current_music"] == 0:
-        screen.blit(surface_text, (res_x *0.41 - w/2, res_y *0.63 - h / 2))
-    else:
-        screen.blit(surface_text, (res_x *0.36 - w/2, res_y *0.48 - h / 2))
-
-    # render_loading_bar(time.time() - state["time"], time_loading)
     if state["current_music"] > 0:
-        surface_text = fonts["normal_mais_un_peu_plus"].render("Titre : " + state["answer_titre"], False, (0, 255, 0))
-        w, h = fonts["normal_mais_un_peu_plus"].size(str(seconds))
-        screen.blit(surface_text, (res_x / 4, res_y / 2 + 10 * h))
-        surface_text = fonts["normal_mais_un_peu_plus"].render("Artiste : " + state["answer_artiste"], False, (0, 255, 0))
-        w, h = fonts["normal_mais_un_peu_plus"].size(str(seconds))
-        screen.blit(surface_text, (res_x / 4, res_y / 2 + 8.7 * h))
+        # Display title
+        title = f'Titre : {state["answer_titre"]}'
+        surface_text = fonts["normal_mais_un_peu_plus"].render(title, False, (0, 255, 0))
+        screen.blit(surface_text, (res_x / 4, res_y * 0.7))
+        # Display artist
+        artist = f'Artiste : {state["answer_artiste"]}'
+        surface_text = fonts["normal_mais_un_peu_plus"].render(artist, False, (0, 255, 0))
+        screen.blit(surface_text, (res_x / 4, res_y * 0.73))
+        # Display skip text
+        skip = "Appuyez sur le bouton start pour passer"
+        surface_text = fonts["normal"].render(skip, False, (0, 255, 255))
+        screen.blit(surface_text, (res_x / 4, res_y * 0.8))
 
 
 def render_music_playing():
@@ -600,17 +597,13 @@ def render_music_playing():
         # music playing
         screen.blit(playing, (0, 0))
         render_loading_bar(time.time() - state["time"], time_song)
-        seconds = time_song - int(time.time() - state["time"])
-        surface_text = fonts["big"].render(str(seconds), False, (255, 255, 255))
-        w, h = fonts["big"].size(str(seconds))
-        # screen.blit(surface_text, (res_x / 2 - w/2, res_y * 0.29 - h / 2))
         gt = time_global - (time.time() - state["global_time"])
         minutes = int(gt / 60)
         secondes = int(gt - 60 * minutes)
         text = ("0" if minutes < 10 else "") + str(minutes) + ":" + ("0" if secondes < 10 else "") + str(secondes)
         surface_text = fonts["big"].render(text, False, (255, 255, 255))
         w, h = fonts["big"].size(text)
-        screen.blit(surface_text, (res_x *0.51 - w/2, res_y * 0.55))
+        screen.blit(surface_text, (res_x * 0.51 - w/2, res_y * 0.55))
 
         # Display the music category
         surface_text = fonts["normal_mais_un_peu_plus"].render(state["category"], False, (0, 0, 255))
@@ -623,11 +616,11 @@ def render_music_playing():
         text = state["player_1"]["username"] + " a buzzé"
         surface_text = fonts["normal"].render(text, False, (255, 255, 255))
         w, h = fonts["normal"].size(text)
-        screen.blit(surface_text, (res_x *0.43 - w/2, res_y *0.45 - h / 2))
+        screen.blit(surface_text, (res_x * 0.43 - w/2, res_y * 0.45 - h / 2))
         text = texts[0]
         surface_text = fonts["normal_mais_un_peu_plus"].render(text, False, (0, 0, 0))
         w, h = fonts["normal_mais_un_peu_plus"].size(text)
-        screen.blit(surface_text, (res_x *0.43 - w/2, res_y *0.61 - h / 2))
+        screen.blit(surface_text, (res_x * 0.43 - w/2, res_y * 0.61 - h / 2))
         render_loading_bar_answer(time.time() - state["timer_1"], time_answer)
         text = "Trouve l'artiste ou le titre"
         if state["artiste"]:
