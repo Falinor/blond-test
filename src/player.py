@@ -26,6 +26,9 @@ class Player:
     def pause(self):
         self.player.pause()
 
+    def is_playing(self):
+        return True if self.player.is_playing() == 1 else False
+
     def stop(self):
         self.player.stop()
 
@@ -41,4 +44,5 @@ if __name__ == '__main__':
     player.enqueue(track)
     player.play()
     print(track.title, track.artists)
+    player.is_playing()
     time.sleep(30)

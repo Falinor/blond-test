@@ -6,7 +6,7 @@ categories = [
     'french_variety',
     'in_the_car',
     'hiphop',
-    'latin',
+    # 'latin',
     'party',
     'pop',
     'popculture',

@@ -298,7 +298,8 @@ def update_loading():
     GPIO.output(led_start, s)
     GPIO.output(led_1, s)
     GPIO.output(led_2, s)
-    if time.time() - state["time"] > time_loading:
+    if not player.is_playing():
+        # if time.time() - state["time"] > time_loading:
         if state["current_music"] >= len(musics):
             state["time"] = time.time()
             player.stop()
