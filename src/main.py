@@ -397,32 +397,33 @@ def update_music_play():
             state["done"] = True
         if event.type == pygame.KEYDOWN:
             if state["timer_1"] > 0 or state["timer_2"] > 0:
-                if event.key != pygame.K_BACKSPACE:
-                    texts[0] += event.unicode if event.unicode in "abcdefghijklimonpqrstuvwxyz01234567890!.,- " else ""
+                if event.key == pygame.K_BACKSPACE:
+                    texts[0] = texts[0][:-1]
+                elif event.key == pygame.K_RETURN:
+                    if check_match(texts[0], state["answer_titre"]) and not state["titre"]:
+                        sounds["good"].play()
+                        state["titre"] = True
+                        if state["timer_1"]:
+                            state["player_1"]["points"] += 1
+                            state["has_won_1"] = True
+                        else:
+                            state["player_2"]["points"] += 1
+                            state["has_won_2"] = True
+                        texts[0] = ""
+                        state["timer_1" if state["timer_1"] else "timer_2"] = time.time()
+                    if check_match(texts[0], state["answer_artiste"]) and not state["artiste"]:
+                        sounds["good"].play()
+                        if state["timer_1"]:
+                            state["player_1"]["points"] += 1
+                            state["has_won_1"] = True
+                        else:
+                            state["player_2"]["points"] += 1
+                            state["has_won_2"] = True
+                        texts[0] = ""
+                        state["artiste"] = True
+                        state["timer_1" if state["timer_1"] else "timer_2"] = time.time()
                 else:
-                    texts[0] = ""
-                if check_match(texts[0], state["answer_titre"]) and not state["titre"]:
-                    sounds["good"].play()
-                    state["titre"] = True
-                    if state["timer_1"]:
-                        state["player_1"]["points"] += 1
-                        state["has_won_1"] = True
-                    else:
-                        state["player_2"]["points"] += 1
-                        state["has_won_2"] = True
-                    texts[0] = ""
-                    state["timer_1" if state["timer_1"] else "timer_2"] = time.time()
-                if check_match(texts[0], state["answer_artiste"]) and not state["artiste"]:
-                    sounds["good"].play()
-                    if state["timer_1"]:
-                        state["player_1"]["points"] += 1
-                        state["has_won_1"] = True
-                    else:
-                        state["player_2"]["points"] += 1
-                        state["has_won_2"] = True
-                    texts[0] = ""
-                    state["artiste"] = True
-                    state["timer_1" if state["timer_1"] else "timer_2"] = time.time()
+                    texts[0] += event.unicode if event.unicode in "abcdefghijklimonpqrstuvwxyz01234567890!.,- " else ""
 
 
 def check_match(s1, s2):
