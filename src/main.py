@@ -5,7 +5,7 @@ import textdistance
 import random
 import RPi.GPIO as GPIO
 
-from music import MusicService
+import music
 from player import Player
 from categories import categories
 from thread_http import *
@@ -53,7 +53,6 @@ state_led = [0]
 thread = ThreadHttp()
 
 player = Player()
-music_service = MusicService()
 
 state = {
     "attraction": None,
@@ -174,9 +173,9 @@ def init():
 
 def init_musics():
     state["category"] = random.choice(categories)
-    playlist = music_service.random_playlist(category=state["category"])
+    playlist = music.random_playlist(category=state["category"])
     state["category"] = state["category"].capitalize()
-    tracks = music_service.tracks(playlist)
+    tracks = music.tracks(playlist)
     # TODO: check this out
     # music_service.tracks seems to be launched in a thread
     # which resolves after the loading completes, so the game
@@ -193,14 +192,14 @@ def fill_background(color):
 
 
 def get_next_music():
-    music = musics[state["current_music"]]
+    track = musics[state["current_music"]]
     state["current_music"] += 1
-    state["answer_titre"] = music.title
+    state["answer_titre"] = track.title
     # TODO: handle multiple artists
-    state["answer_artiste"] = music.artists[0]
+    state["answer_artiste"] = track.artists[0]
     state["has_won_1"] = False
     state["has_won_2"] = False
-    player.enqueue(music)
+    player.enqueue(track)
     player.play()
     # WARNING: FAUT PAS FAIRE CA
     # player.set_volume(0.5)
