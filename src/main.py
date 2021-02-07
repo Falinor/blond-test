@@ -430,7 +430,7 @@ def check_match(s1, s2):
     charset = 'abcdefghijklmnopqrstuvwxyz0123456789'
     t1 = "".join([a for a in s1.lower() if a in charset]).lower()
     t2 = "".join([a for a in s2.lower() if a in charset]).lower()
-    return textdistance.levenshtein(t1, t2) <= 3 or len(s1) >= len(s2) - 1
+    return textdistance.levenshtein(t1, t2) <= 3
 
 
 def update_end():
