@@ -1,27 +1,5 @@
-from redis import Redis
+from redis import StrictRedis
+from redis_cache import RedisCache
 
-
-class RedisCache:
-    def __init__(self):
-        self.r = Redis()
-
-    def get(self, key: str):
-        val = self.r.get(key)
-        # self.r.delete(key)
-        return val
-
-    def set(self, key: str, val):
-        self.r.set(key, val)
-
-
-class MemoryCache:
-    def __init__(self):
-        self.map = {}
-
-    def get(self, key: str):
-        val = self.map.get(key)
-        # self.map.delete(key)
-        return val
-
-    def set(self, key: str, val):
-        self.map[key] = val
+client = StrictRedis(host="redis", decode_responses=True)
+cache = RedisCache(redis_client=client)
