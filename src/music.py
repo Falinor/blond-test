@@ -1,4 +1,5 @@
 from random import choice
+import re
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
@@ -48,8 +49,13 @@ def random_track(playlist, limit=20, offset=0):
     return choice(ts)
 
 
+def normalize(title: str) -> str:
+    without_title = re.sub(r"- .+", "", title)
+    return re.sub(r"\(.+\)", "", without_title).strip()
+
+
 def from_spotify_track(track):
     return Track(
-        title=track['name'],
+        title=normalize(track['name']),
         artists=[artist['name'] for artist in track['artists']]
     )
