@@ -27,12 +27,12 @@ def random_playlist(category, limit=20, offset=0):
 
 
 @cache.cache()
-def tracks(playlist, limit=20, offset=0):
+def tracks(playlist_id, limit=20, offset=0):
     ts = [
         item['track']
         for item
         in sp.playlist_items(
-            playlist_id=playlist['id'],
+            playlist_id=playlist_id,
             market='FR',
             fields='items(track(name,artists(name)))',
             additional_types=['track'],
@@ -44,7 +44,7 @@ def tracks(playlist, limit=20, offset=0):
 
 
 def random_track(playlist, limit=20, offset=0):
-    ts = tracks(playlist, limit, offset)
+    ts = tracks(playlist["id"], limit, offset)
     return choice(ts)
 
 

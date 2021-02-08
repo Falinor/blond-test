@@ -175,7 +175,7 @@ def init_musics():
     state["category"] = random.choice(categories)
     playlist = music.random_playlist(category=state["category"])
     state["category"] = state["category"].capitalize()
-    tracks = music.tracks(playlist)
+    tracks = music.tracks(playlist["id"])
     # TODO: check this out
     # music_service.tracks seems to be launched in a thread
     # which resolves after the loading completes, so the game
