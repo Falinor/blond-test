@@ -12,6 +12,7 @@ spotipy = "*"
 google-api-python-client = "*"
 textdistance = "*"
 pygame = "~=1.9.4"
+python-redis-cache = "*"
 
 [dev-packages]
 

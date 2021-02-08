@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "f0b14f4b3ddfc1409eb3c3cdc9d49232def7dcbccffe3b1413dad5a0e374daee"
+            "sha256": "431fada2e0fcaf233a1fb55dbd90d4c5f9194c760d385c96f36084144cc82075"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -57,11 +57,11 @@
         },
         "google-auth": {
             "hashes": [
-                "sha256:0b0e026b412a0ad096e753907559e4bdb180d9ba9f68dd9036164db4fdc4ad2e",
-                "sha256:ce752cc51c31f479dbf9928435ef4b07514b20261b021c7383bee4bda646acb8"
+                "sha256:008e23ed080674f69f9d2d7d80db4c2591b9bb307d136cea7b3bc129771d211d",
+                "sha256:514e39f4190ca972200ba33876da5a8857c5665f2b4ccc36c8b8ee21228aae80"
             ],
             "markers": "python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3, 3.4, 3.5'",
-            "version": "==1.24.0"
+            "version": "==1.25.0"
         },
         "google-auth-httplib2": {
             "hashes": [
@@ -192,6 +192,13 @@
             "index": "pypi",
             "version": "==1.9.6"
         },
+        "python-redis-cache": {
+            "hashes": [
+                "sha256:09f686b9f2cde9414809ae987e14321e808e553fbbf297421de90c1253af7388"
+            ],
+            "index": "pypi",
+            "version": "==1.1.0"
+        },
         "python-vlc": {
             "hashes": [
                 "sha256:508bc5b4b4fd72b4e23c926795bdcd38c7c1c08a4dd6b8cc87b0abd1d7118aa1",
@@ -202,10 +209,10 @@
         },
         "pytz": {
             "hashes": [
-                "sha256:16962c5fb8db4a8f63a26646d8886e9d769b6c511543557bc84e9569fb9a9cb4",
-                "sha256:180befebb1927b16f6b57101720075a984c019ac16b1b7575673bea42c6c3da5"
+                "sha256:83a4a90894bf38e243cf052c8b58f381bfe9a7a483f6a9cab140bc7f702ac4da",
+                "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"
             ],
-            "version": "==2020.5"
+            "version": "==2021.1"
         },
         "redis": {
             "hashes": [
@@ -250,11 +257,11 @@
         },
         "textdistance": {
             "hashes": [
-                "sha256:61ddcdd9a78da99eff11dc1219d444f72915212cf36947de3266a356f5e934f7",
-                "sha256:6d2a398815aeed453cfb38a3b62da74e33fa6a5f4e42845fd1d2c9611836befd"
+                "sha256:46f8df3b26c7f319ab500b417047f61b85c2dd221781cb02f6c9136e5f1c9284",
+                "sha256:870c436b2923e0b491fa7bfe9cc45014fc328f90448a9d721baf042f9c209704"
             ],
             "index": "pypi",
-            "version": "==4.2.0"
+            "version": "==4.2.1"
         },
         "uritemplate": {
             "hashes": [
@@ -274,11 +281,11 @@
         },
         "youtube-dl": {
             "hashes": [
-                "sha256:982ba6d597ffa7abe00da7f0823b49edd49bca95b4ef64059c56a9f89613d9f4",
-                "sha256:d0dc8abd6e89f81171c66d2ffc073eaabf9d5fc6de94e244da36f92a75cc52d7"
+                "sha256:831a29b2d34493ef8181ff288f403135bb4b00df1cd201eb8cbe80b5b5425760",
+                "sha256:b337f20563094decc6b3c16e6fcad14ec3df9d99519344d6e95e40878b2c8075"
             ],
             "index": "pypi",
-            "version": "==2021.1.24.1"
+            "version": "==2021.2.4.1"
         }
     },
     "develop": {}

@@ -1,10 +1,8 @@
 import pafy
 import vlc
 
-import time
-from music import MusicService
 from track import Track
-from youtube import YoutubeService
+import youtube
 
 
 class Player:
@@ -12,10 +10,9 @@ class Player:
         self.track = None
         self.instance = vlc.Instance()
         self.player = self.instance.media_player_new()
-        self.youtube = YoutubeService()
 
     def enqueue(self, track: Track) -> None:
-        url = self.youtube.search(track)
+        url = youtube.search(title=track.title, artists=track.artists)
         audio = pafy.new(url).getbestaudio()
         media = self.instance.media_new(audio.url)
         self.player.set_media(media)
@@ -34,15 +31,3 @@ class Player:
 
     def set_volume(self, volume: float):
         self.player.set_volume(volume * 100)
-
-
-if __name__ == '__main__':
-    music_service = MusicService()
-    playlist = music_service.random_playlist('pop')
-    track = music_service.random_track(playlist)
-    player = Player()
-    player.enqueue(track)
-    player.play()
-    print(track.title, track.artists)
-    player.is_playing()
-    time.sleep(30)

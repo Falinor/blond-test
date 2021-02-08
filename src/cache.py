@@ -1,27 +1,17 @@
-from redis import Redis
+from json import JSONEncoder
+from typing import Any
+
+from redis import StrictRedis
+from redis_cache import RedisCache
 
 
-class RedisCache:
-    def __init__(self):
-        self.r = Redis()
-
-    def get(self, key: str):
-        val = self.r.get(key)
-        # self.r.delete(key)
-        return val
-
-    def set(self, key: str, val):
-        self.r.set(key, val)
+class Encoder(JSONEncoder):
+    def default(self, o: Any) -> Any:
+        encode = getattr(o, "encode", None)
+        if callable(encode):
+            return o.encode()
+        return o.__dict__
 
 
-class MemoryCache:
-    def __init__(self):
-        self.map = {}
-
-    def get(self, key: str):
-        val = self.map.get(key)
-        # self.map.delete(key)
-        return val
-
-    def set(self, key: str, val):
-        self.map[key] = val
+client = StrictRedis(host="localhost", decode_responses=True)
+cache = RedisCache(redis_client=client, serializer=Encoder().encode)
