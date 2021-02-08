@@ -172,6 +172,7 @@ def init():
 
 
 def init_musics():
+    musics.clear()
     state["category"] = random.choice(categories)
     playlist = music.random_playlist(category=state["category"])
     state["category"] = state["category"].capitalize()
