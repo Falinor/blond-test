@@ -1,7 +1,7 @@
 categories = [
-    '2020',
     'alternative',
     'at_home',
+    'decades',
     # 'electro',
     'french_variety',
     'in_the_car',
@@ -21,9 +21,9 @@ categories = [
 
 def translate(category_id: str) -> str:
     translation_map = {
-        "2020": "2020",
         "alternative": "Alternatif",
         "at_home": "À la maison",
+        "decades": "Décennies",
         "french_variety": "Variété française",
         "in_the_car": "Dans la voiture",
         "hiphop": "Hip-hop",
