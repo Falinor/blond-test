@@ -1,8 +1,9 @@
 from os import environ as env
 from typing import List
 import googleapiclient.discovery
+from googleapiclient.errors import HttpError
 
-from cache import cache
+from cache import cache, client
 
 
 youtube = googleapiclient.discovery.build(
@@ -14,12 +15,19 @@ youtube = googleapiclient.discovery.build(
 
 @cache.cache()
 def search(title: str, artists: List[str]):
-    result = youtube.search().list(
-        q=f"{title} {','.join(artists)} lyrics",
-        part='snippet',
-        maxResults=1,
-        regionCode="fr",
-        type="video",
-        fields='items(id(videoId))'
-    ).execute()
-    return result['items'][0]['id']['videoId']
+    try:
+        result = youtube.search().list(
+            q=f"{title} {','.join(artists)} lyrics",
+            part='snippet',
+            maxResults=1,
+            regionCode="fr",
+            type="video",
+            fields='items(id(videoId))'
+        ).execute()
+        return result['items'][0]['id']['videoId']
+    except HttpError:
+        print('YouTube quota exceeded')
+        # Return a random song from the cache
+        # TODO: get from cache
+        # return client.srandmember('set name')
+        pass
