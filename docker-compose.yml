@@ -5,4 +5,8 @@ services:
     image: "redis:alpine"
     ports:
       - "6379:6379"
+    volumes:
+      - $PWD/redis-data:/var/lib/data
+    environment:
+      REDIS_REPLICATION_MODE: master
     restart: "unless-stopped"

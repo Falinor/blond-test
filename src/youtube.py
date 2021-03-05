@@ -1,7 +1,6 @@
 from os import environ as env
 from typing import List
 import googleapiclient.discovery
-from googleapiclient.errors import HttpError
 
 from cache import cache, client
 
@@ -25,7 +24,7 @@ def search(title: str, artists: List[str]):
             fields='items(id(videoId))'
         ).execute()
         return result['items'][0]['id']['videoId']
-    except HttpError:
+    except:
         print('YouTube quota exceeded')
         # Return a random song from the cache
         # TODO: get from cache
