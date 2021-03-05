@@ -7,7 +7,7 @@ import RPi.GPIO as GPIO
 
 import music
 from player import Player
-from categories import categories
+from categories import categories, translate
 from thread_http import *
 from constants import *
 
@@ -54,6 +54,8 @@ thread = ThreadHttp()
 
 player = Player()
 
+category_cols = 4
+
 state = {
     "attraction": None,
     "ranking": [],
@@ -75,7 +77,9 @@ state = {
     "has_won_2": False,
     "index_rules": 0,
     "done": False,
-    "category": None
+    "category": None,
+    "category_hover": 0,
+    "category_select": False
 }
 
 end_0 = pygame.image.load(os.path.join("..", "data", "images", "end_0.png"))
@@ -171,11 +175,10 @@ def init():
     light_remote_led("all")
 
 
-def init_musics():
+def init_musics(category: str = random.choice(categories)) -> None:
     musics.clear()
-    state["category"] = random.choice(categories)
-    playlist = music.random_playlist(category=state["category"])
-    state["category"] = state["category"].capitalize()
+    state["category"] = category
+    playlist = music.random_playlist(category)
     tracks = music.tracks(playlist["id"])
     # TODO: check this out
     # music_service.tracks seems to be launched in a thread
@@ -242,6 +245,8 @@ def update():
         update_lobby()
     elif state["state"] == REGLES:
         update_regles()
+    elif state["state"] == CHOOSE_CATEGORY:
+        update_category()
     elif state["state"] == LOADING:
         update_loading()
     elif state["state"] == MUSIC_PLAY:
@@ -284,22 +289,46 @@ def update_regles():
     elif not state["pressed"]:
         state["index_rules"] += 1
         if state["index_rules"] >= 3:
-            init_musics()
-            light_remote_led("white")
-            GPIO.output(led_start, False)
-            GPIO.output(led_1, False)
-            GPIO.output(led_2, False)
-            state["state"] = LOADING
-            state["time"] = time.time()
+            # Select the category
+            state["state"] = CHOOSE_CATEGORY
+
+
+def update_category():
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                state["category_hover"] -= 1
+                if state["category_hover"] < 0:
+                    state["category_hover"] = 0
+            if event.key == pygame.K_RIGHT:
+                state["category_hover"] += 1
+                if state["category_hover"] > len(categories) - 1:
+                    state["category_hover"] = len(categories) - 1
+
+            if event.key == pygame.K_UP:
+                state["category_hover"] -= category_cols
+                if state["category_hover"] < 0:
+                    state["category_hover"] = 0
+            if event.key == pygame.K_DOWN:
+                state["category_hover"] += category_cols
+                if state["category_hover"] > len(categories) - 1:
+                    state["category_hover"] = len(categories) - 1
+
+            if event.key == pygame.K_RETURN:
+                state["category_select"] = True
+                index = state["category_hover"]
+                init_musics(categories[index])
+                light_remote_led("white")
+                GPIO.output(led_start, False)
+                GPIO.output(led_1, False)
+                GPIO.output(led_2, False)
+                state["state"] = LOADING
+                state["time"] = time.time()
 
 
 def update_loading():
-    s = int(4 * (time.time() - state["time"])) % 2
-    GPIO.output(led_start, s)
-    GPIO.output(led_1, s)
-    GPIO.output(led_2, s)
+    GPIO.output(led_start, True)
     if not GPIO.input(button_start) or not player.is_playing():
-        # if time.time() - state["time"] > time_loading:
         if state["current_music"] >= len(musics):
             state["time"] = time.time()
             player.stop()
@@ -470,10 +499,13 @@ def update_scores():
         state["has_buzzed_2"] = False
         state["done"] = 0
 
+
 def render():
     fill_background((255, 255, 255))
     if state["state"] == LOBBY:
         render_lobby()
+    elif state["state"] == CHOOSE_CATEGORY:
+        render_categories()
     elif state["state"] == LOADING:
         render_loading()
     elif state["state"] == MUSIC_PLAY:
@@ -519,6 +551,42 @@ def render_rules():
         screen.blit(rules_2, (0, 0))
 
 
+def render_categories():
+    screen = screens[0]
+    padding = 20
+    cols = category_cols
+    offset_x = 0
+    offset_y = 0
+    w = res_x / cols - padding * 2
+    h = 200
+    i = 0
+
+    light_blue = (149, 182, 255)
+    dark_blue = (50, 100, 255)
+
+    for category in categories:
+        left = offset_x + padding
+        top = offset_y + padding
+        # TODO: random color (with gradient ?)
+        # Highlight the hovered category
+        if categories[state["category_hover"]] == category:
+            color = dark_blue
+        else:
+            color = light_blue
+
+        pygame.draw.rect(screen, color, pygame.Rect(left, top, w, h))
+        surface_text = fonts["big"].render(translate(category), False, (0, 0, 0))
+        screen.blit(surface_text, (left + padding, top + padding))
+
+        i += 1
+        if i == cols:
+            offset_x = 0
+            offset_y += h + padding
+            i = 0
+        else:
+            offset_x += w + padding
+
+
 def render_end():
     screen = screens[0]
     if state["player_1"]["points"] > state["player_2"]["points"]:
@@ -547,7 +615,6 @@ def render_end():
     surface_text = fonts["big"].render(text, False, (0, 255, 0))
     w, h = fonts["big"].size(text)
     screen.blit(surface_text, (res_x * 0.385 - w / 2, res_y * 0.73 - h / 2))
-
 
 
 def render_scores():
@@ -612,7 +679,8 @@ def render_music_playing():
         screen.blit(surface_text, (res_x * 0.51 - w/2, res_y * 0.55))
 
         # Display the music category
-        surface_text = fonts["normal_mais_un_peu_plus"].render(state["category"], False, (0, 0, 255))
+        category = translate(state["category"])
+        surface_text = fonts["normal_mais_un_peu_plus"].render(category, False, (0, 0, 255))
         w, h = fonts["normal_mais_un_peu_plus"].size(state["category"])
         screen.blit(surface_text, (res_x * 0.5 - w / 2, res_y * 0.9))
 

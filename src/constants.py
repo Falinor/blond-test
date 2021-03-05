@@ -3,6 +3,7 @@ api_url = "https://battlemythe.net/api"
 
 LOBBY = "LOBBY"
 REGLES = "REGLES"
+CHOOSE_CATEGORY = "CHOOSE_CATEGORY"
 LOADING = "LOADING"
 MUSIC_PLAY = "MUSIC_PLAY"
 END = "END"
