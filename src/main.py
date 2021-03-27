@@ -260,12 +260,10 @@ def update():
 def update_lobby():
     # Mode autonome
     state["player_1"] = {
-        "userId": "id1",
         "username": "Monique",
         "points": 0
     }
     state["player_2"] = {
-        "userId": "id2",
         "username": "Véro",
         "points": 0
     }

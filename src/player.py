@@ -24,7 +24,7 @@ class Player:
         self.player.pause()
 
     def is_playing(self):
-        return True if self.player.is_playing() == 1 else False
+        return self.player.is_playing() == 1
 
     def stop(self):
         self.player.stop()
