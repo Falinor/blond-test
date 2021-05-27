@@ -4,10 +4,10 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pafy = "*"
+pafy = "0.5.5"
 python-vlc = "*"
 redis = "*"
-youtube-dl = "*"
+youtube-dl = "2021.05.16"
 spotipy = "*"
 google-api-python-client = "*"
 textdistance = "*"
