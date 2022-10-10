@@ -7,7 +7,6 @@ import RPi.GPIO as GPIO
 
 import music
 from player import Player
-from categories import categories, translate
 from thread_http import *
 from constants import *
 
@@ -46,6 +45,7 @@ texts = [""]
 fonts = {}
 
 song = {}
+categories = []
 musics = []
 
 state_led = [0]
@@ -173,9 +173,11 @@ def init():
     GPIO.setup(relay_1, GPIO.OUT)
     GPIO.setup(relay_2, GPIO.OUT)
     light_remote_led("all")
+    # Load categories from Spotify
+    categories = music.categories()
 
 
-def init_musics(category: str = random.choice(categories)) -> None:
+def init_musics(category=random.choice(categories)) -> None:
     musics.clear()
     state["category"] = category
     playlist = music.random_playlist(category)
@@ -315,6 +317,7 @@ def update_category():
                     state["category_hover"] = len(categories) - 1
 
             if event.key == pygame.K_RETURN:
+                # TODO: comprendre category hover et envoyer l'ID de la catégorie à Spotify
                 state["category_select"] = True
                 index = state["category_hover"]
                 init_musics(categories[index])
@@ -575,7 +578,7 @@ def render_categories():
             color = light_blue
 
         pygame.draw.rect(screen, color, pygame.Rect(left, top, w, h))
-        surface_text = fonts["big"].render(translate(category), False, (0, 0, 0))
+        surface_text = fonts["big"].render(category["name"], False, (0, 0, 0))
         screen.blit(surface_text, (left + padding, top + padding))
 
         i += 1

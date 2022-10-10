@@ -12,9 +12,19 @@ sp = spotipy.Spotify(auth_manager=auth_manager)
 
 
 @cache.cache()
+def categories(limit=20, offset=0):
+    return sp.categories(
+        country='FR',
+        locale='fr_FR',
+        limit=limit,
+        offset=offset
+    )['categories']['items']
+
+
+@cache.cache()
 def playlists(category, limit=20, offset=0):
     return sp.category_playlists(
-        category_id=category,
+        category_id=category['id'],
         country='FR',
         limit=limit,
         offset=offset
