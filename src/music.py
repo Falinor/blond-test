@@ -13,6 +13,7 @@ sp = spotipy.Spotify(auth_manager=auth_manager)
 
 @cache.cache()
 def categories(limit=20, offset=0):
+    print('Fetch categories')
     return sp.categories(
         country='FR',
         locale='fr_FR',
@@ -23,6 +24,7 @@ def categories(limit=20, offset=0):
 
 @cache.cache()
 def playlists(category, limit=20, offset=0):
+    print('Fetch playlists from category', category)
     return sp.category_playlists(
         category_id=category['id'],
         country='FR',
@@ -32,6 +34,7 @@ def playlists(category, limit=20, offset=0):
 
 
 def random_playlist(category, limit=20, offset=0):
+    print('Fetch random playlist from category', category)
     pls = playlists(category, limit, offset)
     # TODO: do not use the playlist if it has already been played
     return choice(pls)
@@ -39,6 +42,7 @@ def random_playlist(category, limit=20, offset=0):
 
 @cache.cache()
 def tracks(playlist_id, limit=20, offset=0):
+    print('Fetch tracks from playlist', playlist_id)
     ts = [
         item['track']
         for item
@@ -55,6 +59,7 @@ def tracks(playlist_id, limit=20, offset=0):
 
 
 def random_track(playlist, limit=20, offset=0):
+    print('Fetch random track from playlist', playlist["name"])
     ts = tracks(playlist["id"], limit, offset)
     return choice(ts)
 

@@ -45,7 +45,6 @@ texts = [""]
 fonts = {}
 
 song = {}
-categories = []
 musics = []
 
 state_led = [0]
@@ -77,6 +76,7 @@ state = {
     "has_won_2": False,
     "index_rules": 0,
     "done": False,
+    "categories": [],
     "category": None,
     "category_hover": 0,
     "category_select": False
@@ -174,10 +174,10 @@ def init():
     GPIO.setup(relay_2, GPIO.OUT)
     light_remote_led("all")
     # Load categories from Spotify
-    categories = music.categories()
+    state['categories'] = music.categories()
 
 
-def init_musics(category=random.choice(categories)) -> None:
+def init_musics(category=random.choice(state['categories'])) -> None:
     musics.clear()
     state["category"] = category
     playlist = music.random_playlist(category)
@@ -304,8 +304,8 @@ def update_category():
                     state["category_hover"] = 0
             if event.key == pygame.K_RIGHT:
                 state["category_hover"] += 1
-                if state["category_hover"] > len(categories) - 1:
-                    state["category_hover"] = len(categories) - 1
+                if state["category_hover"] > len(state['categories']) - 1:
+                    state["category_hover"] = len(state['categories']) - 1
 
             if event.key == pygame.K_UP:
                 state["category_hover"] -= category_cols
@@ -313,14 +313,14 @@ def update_category():
                     state["category_hover"] = 0
             if event.key == pygame.K_DOWN:
                 state["category_hover"] += category_cols
-                if state["category_hover"] > len(categories) - 1:
-                    state["category_hover"] = len(categories) - 1
+                if state["category_hover"] > len(state['categories']) - 1:
+                    state["category_hover"] = len(state['categories']) - 1
 
             if event.key == pygame.K_RETURN:
                 # TODO: comprendre category hover et envoyer l'ID de la catégorie à Spotify
                 state["category_select"] = True
                 index = state["category_hover"]
-                init_musics(categories[index])
+                init_musics(state['categories'][index])
                 light_remote_led("white")
                 GPIO.output(led_start, False)
                 GPIO.output(led_1, False)
@@ -567,12 +567,12 @@ def render_categories():
     light_blue = (149, 182, 255)
     dark_blue = (50, 100, 255)
 
-    for category in categories:
+    for category in state['categories']:
         left = offset_x + padding
         top = offset_y + padding
         # TODO: random color (with gradient ?)
         # Highlight the hovered category
-        if categories[state["category_hover"]] == category:
+        if state['categories'][state["category_hover"]] == category:
             color = dark_blue
         else:
             color = light_blue
