@@ -34,8 +34,9 @@ def playlists(category, limit=20, offset=0):
 
 
 def random_playlist(category, limit=20, offset=0):
-    print('Fetch random playlist from category', category)
+    print('Fetch random playlist from category', category['name'])
     pls = playlists(category, limit, offset)
+    print('Obtain', len(pls), 'playlists')
     # TODO: do not use the playlist if it has already been played
     return choice(pls)
 

@@ -14,6 +14,7 @@ youtube = googleapiclient.discovery.build(
 
 @cache.cache()
 def search(title: str, artists: List[str]):
+    print(f"Search for {title} by {artists}")
     result = youtube.search().list(
         q=f"{title} {','.join(artists)} lyrics",
         part='snippet',
@@ -22,4 +23,5 @@ def search(title: str, artists: List[str]):
         type="video",
         fields='items(id(videoId))'
     ).execute()
+    print('Found video', result['items'][0]['id']['videoId'])
     return result['items'][0]['id']['videoId']

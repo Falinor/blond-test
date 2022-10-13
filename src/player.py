@@ -10,10 +10,13 @@ class Player:
         self.track = None
         self.instance = vlc.Instance()
         self.player = self.instance.media_player_new()
+        self.set_volume(1)
 
     def enqueue(self, track: Track) -> None:
         url = youtube.search(title=track.title, artists=track.artists)
+        print('Video URL found', url)
         audio = pafy.new(url).getbestaudio()
+        print('Audio found', audio.url)
         media = self.instance.media_new(audio.url)
         self.player.set_media(media)
 
@@ -30,4 +33,5 @@ class Player:
         self.player.stop()
 
     def set_volume(self, volume: float):
-        self.player.set_volume(volume * 100)
+        self.player.audio_set_volume(int(volume * 100))
+

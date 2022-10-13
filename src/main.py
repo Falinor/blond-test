@@ -2,6 +2,7 @@ import os.path
 import pygame
 import sys
 import textdistance
+import traceback
 import random
 import RPi.GPIO as GPIO
 
@@ -39,6 +40,7 @@ led_all = 26
 relay_1 = 8
 relay_2 = 25
 
+SOUND_ENDED_EVENT = 25
 sounds = {}
 screens = [None]
 texts = [""]
@@ -56,6 +58,8 @@ player = Player()
 category_cols = 4
 
 state = {
+    "channel": None,
+    "channel2": None,
     "attraction": None,
     "ranking": [],
     "users": None,
@@ -137,9 +141,14 @@ def set_users(users):
 def init():
     pygame.init()
     pygame.mixer.init()
+    state["channel"] = pygame.mixer.Channel(1)
+    state["channel"].set_volume(0.5)
+    state["channel2"] = pygame.mixer.Channel(2)
+    state["channel2"].set_endevent(SOUND_ENDED_EVENT)
+    state["channel2"].set_volume(1)
     # screens[0] = pygame.display.set_mode((res_x, res_y), pygame.FULLSCREEN | pygame.HWSURFACE)
     screens[0] = pygame.display.set_mode((res_x, res_y))
-    pygame.display.set_caption("Blind test")
+    pygame.display.set_caption("Blond test")
     sounds["buzz"] = pygame.mixer.Sound('./../data/buzzer.ogg')
     sounds["good"] = pygame.mixer.Sound('./../data/good.ogg')
     sounds["bad"] = pygame.mixer.Sound('./../data/bad.ogg')
@@ -177,9 +186,10 @@ def init():
     state['categories'] = music.categories()
 
 
-def init_musics(category=random.choice(state['categories'])) -> None:
+def init_musics(category) -> None:
     musics.clear()
-    state["category"] = category
+    state["category"] = category if category is not None else random.choice(state['categories'])
+    print('Init musics from category', state['category']['name'])
     playlist = music.random_playlist(category)
     tracks = music.tracks(playlist["id"])
     # TODO: check this out
@@ -199,6 +209,7 @@ def fill_background(color):
 
 def get_next_music():
     track = musics[state["current_music"]]
+    print('Musics', musics)
     state["current_music"] += 1
     state["answer_titre"] = track.title
     # TODO: handle multiple artists
@@ -237,7 +248,7 @@ def light_remote_led(led):
 
 
 def update():
-    update_remote_leds()
+    update_remote_leds() 
     if (state["state"] == LOADING or state["state"] == MUSIC_PLAY) and (state["current_music"] > len(musics) or ("global_time" in state and state["global_time"] > 0 and time.time() - state["global_time"] > time_global)):
         state["time"] = time.time()
         pygame.mixer.music.stop()
@@ -331,6 +342,14 @@ def update_category():
 
 def update_loading():
     GPIO.output(led_start, True)
+
+    # Reset player volume when a sound ends
+    for event in pygame.event.get():
+        if event.type == SOUND_ENDED_EVENT:
+            print('Sound ended')
+            player.play()
+            player.set_volume(1)
+
     if not GPIO.input(button_start) or not player.is_playing():
         if state["current_music"] >= len(musics):
             state["time"] = time.time()
@@ -347,32 +366,35 @@ def update_loading():
             light_remote_led("all")
 
 
-def update_music_play():
+def update_music_play():  
     if not GPIO.input(button_1) and state["timer_1"] == 0 and state["timer_2"] == 0 and not state["has_buzzed_1"]:
-        sounds["buzz"].play()
+        # Player 1 answers
+        state["channel"].queue(sounds["buzz"])
         light_remote_led("red")
         texts[0] = ""
         player.pause()
+        # Reduce player volume to hear the comment
         state["timer_1"] = time.time()
         state["has_buzzed_1"] = True
         GPIO.output(led_1, True)
         GPIO.output(led_2, False)
         GPIO.output(relay_1, True)
     if state["timer_1"] > 0 and time.time() - state["timer_1"] > time_answer:
-        sounds["bad"].play()
+        # Player 1 answered wrong
         GPIO.output(relay_1, False)
-        sounds["loose_0"][random.randint(0, 8)].play()
+        state["channel"].queue(sounds["bad"])
+        state["channel2"].queue(sounds["loose_0"][random.randint(0, 8)])
+        player.set_volume(0.2)
+        player.play()
         light_remote_led("all")
         texts[0] = ""
         GPIO.output(led_1, False)
         state["timer_1"] = 0
-        state["time"] += time_answer
-        player.play()
-        # pygame.mixer.music.set_volume(0.5)
         GPIO.output(led_1, not state["has_buzzed_1"])
         GPIO.output(led_2, not state["has_buzzed_2"])
     if not GPIO.input(button_2) and state["timer_2"] == 0 and state["timer_1"] == 0 and not state["has_buzzed_2"]:
-        sounds["buzz"].play()
+        # Player 2 answered
+        state["channel"].play(sounds["buzz"])
         light_remote_led("yellow")
         texts[0] = ""
         state["has_buzzed_2"] = True
@@ -382,24 +404,24 @@ def update_music_play():
         GPIO.output(led_2, True)
         GPIO.output(relay_2, True)
     if state["timer_2"] > 0 and time.time() - state["timer_2"] > time_answer:
-        sounds["bad"].play()
-        sounds["loose_1"][random.randint(0, 8)].play()
+        # Player 2 answered wrong
+        state["channel"].play(sounds["bad"])
+        state["channel2"].play(sounds["loose_1"][random.randint(0, 8)])
         light_remote_led("all")
         texts[0] = ""
         state["timer_2"] = 0
-        state["time"] += time_answer
         GPIO.output(led_1, not state["has_buzzed_1"])
         GPIO.output(led_2, not state["has_buzzed_2"])
         GPIO.output(relay_2, False)
+        player.set_volume(0.2)
         player.play()
-        # pygame.mixer.music.set_volume(0.5)
     if (state["artiste"] and state["titre"]) or ((state["timer_1"] == 0 and state["timer_2"] == 0) and (
             (state["artiste"] and state["titre"]) or time.time() - state["time"] > time_song)) or (
                 (state["timer_1"] == 0 and state["timer_2"] == 0) and state["has_buzzed_1"] and state["has_buzzed_2"]):
+        player.set_volume(0.2)
         player.play()
         GPIO.output(relay_1, False)
         GPIO.output(relay_2, False)
-        # pygame.mixer.music.set_volume(0.2)
         light_remote_led("white")
         state["passed_time"] += time.time() - (state["global_time"] + state["passed_time"])
         state["state"] = LOADING
@@ -417,10 +439,8 @@ def update_music_play():
         elif state["has_won_2"]:
             sounds["win_1"][random.randint(0, 8)].play()
         else:
-            if random.random() > 0.5:
-                sounds["loose_0"][random.randint(0, 8)].play()
-            else:
-                sounds["loose_1"][random.randint(0, 8)].play()
+            sound = sounds["loose_0" if random.random() > 0.5 else "loose_1"]
+            state["channel2"].queue(sound[random.randint(0, 8)])
     if state["timer_1"] > 0 or state["timer_2"] > 0:
         if pygame.key.get_pressed()[pygame.K_BACKSPACE]:
             texts[0] = ""
@@ -682,9 +702,9 @@ def render_music_playing():
         screen.blit(surface_text, (res_x * 0.51 - w/2, res_y * 0.55))
 
         # Display the music category
-        category = translate(state["category"])
+        category = state["category"]["name"]
         surface_text = fonts["normal_mais_un_peu_plus"].render(category, False, (0, 0, 255))
-        w, h = fonts["normal_mais_un_peu_plus"].size(state["category"])
+        w, h = fonts["normal_mais_un_peu_plus"].size(category)
         screen.blit(surface_text, (res_x * 0.5 - w / 2, res_y * 0.9))
 
     elif state["timer_1"] > 0:
@@ -829,7 +849,7 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         pass
     except Exception as e:
-        print(e)
+        traceback.print_exc()
     finally:
         thread.stop()
         player.stop()

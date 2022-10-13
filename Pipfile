@@ -4,16 +4,16 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pafy = "0.5.5"
 python-vlc = "*"
 redis = "*"
-youtube-dl = "2021.05.16"
+youtube-dl = "2021.12.17"
 spotipy = "*"
 google-api-python-client = "*"
 textdistance = "*"
 pygame = "~=1.9.4"
 python-redis-cache = "*"
 "rpi.gpio" = "*"
+pafy = {git = "https://github.com/Cupcakus/pafy"}
 
 [dev-packages]
 
